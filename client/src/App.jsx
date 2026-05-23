@@ -3,11 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
-import { GOOGLE_CLIENT_ID } from './utils/googleConfig';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import SecuritySettings from './components/SecuritySettings';
+
+const GOOGLE_CLIENT_ID = '15482745781-69nig67mgem2r2t3lnsf6d2jc2hh6oan.apps.googleusercontent.com';
 
 function App() {
   return (
@@ -27,6 +29,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/security"
+                element={
+                  <ProtectedRoute>
+                    <SecuritySettings />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
             <Toaster
               position="top-right"
@@ -35,20 +45,6 @@ function App() {
                 style: {
                   background: '#363636',
                   color: '#fff',
-                },
-                success: {
-                  duration: 3000,
-                  theme: {
-                    primary: 'green',
-                    secondary: 'black',
-                  },
-                },
-                error: {
-                  duration: 4000,
-                  theme: {
-                    primary: 'red',
-                    secondary: 'black',
-                  },
                 },
               }}
             />

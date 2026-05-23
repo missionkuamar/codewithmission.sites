@@ -1,4 +1,5 @@
 import { OAuth2Client } from 'google-auth-library';
+import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 
@@ -32,13 +33,11 @@ const verifyGoogleToken = async (credential) => {
 // Generate a unique username from email
 const generateUsername = (email) => {
   const baseUsername = email.split('@')[0];
-  // Remove special characters and spaces
   const cleanUsername = baseUsername.replace(/[^a-zA-Z0-9]/g, '');
-  // Add random number to ensure uniqueness if needed
   return `${cleanUsername}_${Math.floor(Math.random() * 10000)}`;
 };
 
-// Google OAuth - Handles both Login and Registration
+// Google OAuth - Handles both Login and Registration (WITH 2FA Support)
 export const googleAuthCallback = async (req, res) => {
   try {
     const { credential } = req.body;
@@ -65,7 +64,6 @@ export const googleAuthCallback = async (req, res) => {
       user.name = googleUser.name;
       user.picture = googleUser.picture;
       
-      // If user registered with email/password before, link Google account
       if (!user.googleId) {
         user.googleId = googleUser.googleId;
         user.provider = 'google';
@@ -73,7 +71,24 @@ export const googleAuthCallback = async (req, res) => {
       
       await user.save();
       
-      // Generate JWT token
+      // Check if 2FA is enabled
+      if (user.twoFactorEnabled) {
+        const tempToken = jwt.sign(
+          { userId: user._id, twoFAPending: true },
+          process.env.JWT_SECRET,
+          { expiresIn: '5m' }
+        );
+        
+        return res.json({
+          success: true,
+          requires2FA: true,
+          tempToken,
+          userId: user._id,
+          message: '2FA verification required'
+        });
+      }
+      
+      // Normal login without 2FA
       const token = generateToken(user._id);
       
       return res.status(200).json({
@@ -86,7 +101,8 @@ export const googleAuthCallback = async (req, res) => {
           email: user.email,
           picture: user.picture,
           username: user.username,
-          role: user.role
+          role: user.role,
+          twoFactorEnabled: user.twoFactorEnabled
         }
       });
     } else {
@@ -97,7 +113,6 @@ export const googleAuthCallback = async (req, res) => {
       let username = generateUsername(googleUser.email);
       let usernameExists = await User.findOne({ username });
       
-      // Ensure username is unique
       while (usernameExists) {
         username = generateUsername(googleUser.email);
         usernameExists = await User.findOne({ username });
@@ -112,10 +127,10 @@ export const googleAuthCallback = async (req, res) => {
         username: username,
         emailVerified: googleUser.emailVerified,
         provider: 'google',
-        lastLogin: Date.now()
+        lastLogin: Date.now(),
+        twoFactorEnabled: false // New users don't have 2FA enabled
       });
       
-      // Generate JWT token for new user
       const token = generateToken(user._id);
       
       return res.status(201).json({
@@ -128,14 +143,14 @@ export const googleAuthCallback = async (req, res) => {
           email: user.email,
           picture: user.picture,
           username: user.username,
-          role: user.role
+          role: user.role,
+          twoFactorEnabled: false
         }
       });
     }
   } catch (error) {
     console.error('Google auth error:', error);
     
-    // Handle duplicate key errors
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -147,6 +162,86 @@ export const googleAuthCallback = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Authentication failed',
+      error: error.message
+    });
+  }
+};
+
+// Email/Password Login with 2FA Support
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+    
+    // Check if account is locked
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      return res.status(401).json({
+        success: false,
+        message: `Account locked. Try again after ${Math.ceil((user.lockUntil - Date.now()) / 60000)} minutes`
+      });
+    }
+    
+    // Check password (for email users)
+    if (user.provider === 'local') {
+      const bcrypt = await import('bcryptjs');
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        user.loginAttempts += 1;
+        await user.save();
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid credentials'
+        });
+      }
+    }
+    
+    // Reset login attempts on successful password verification
+    user.loginAttempts = 0;
+    await user.save();
+    
+    // Check if 2FA is enabled
+    if (user.twoFactorEnabled) {
+      const tempToken = jwt.sign(
+        { userId: user._id, twoFAPending: true },
+        process.env.JWT_SECRET,
+        { expiresIn: '5m' }
+      );
+      
+      return res.json({
+        success: true,
+        requires2FA: true,
+        tempToken,
+        userId: user._id,
+        message: '2FA verification required'
+      });
+    }
+    
+    // Normal login without 2FA
+    const token = generateToken(user._id);
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+        role: user.role,
+        twoFactorEnabled: user.twoFactorEnabled
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Login failed',
       error: error.message
     });
   }
@@ -171,10 +266,12 @@ export const getCurrentUser = async (req, res) => {
         picture: user.picture,
         username: user.username,
         role: user.role,
-        provider: user.provider
+        provider: user.provider,
+        twoFactorEnabled: user.twoFactorEnabled
       }
     });
   } catch (error) {
+    console.error('Get current user error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
@@ -191,14 +288,13 @@ export const logout = (req, res) => {
   });
 };
 
-// Optional: Link Google account to existing email/password user
+// Link Google account to existing email/password user
 export const linkGoogleAccount = async (req, res) => {
   try {
     const { credential, email, password } = req.body;
     const googleUser = await verifyGoogleToken(credential);
     
-    // Find existing user by email and password
-    const user = await User.findOne({ email, password });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -206,9 +302,20 @@ export const linkGoogleAccount = async (req, res) => {
       });
     }
     
+    // Verify password
+    const bcrypt = await import('bcryptjs');
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid password'
+      });
+    }
+    
     // Link Google account
     user.googleId = googleUser.googleId;
     user.provider = 'google';
+    user.picture = googleUser.picture;
     await user.save();
     
     res.json({
@@ -216,6 +323,7 @@ export const linkGoogleAccount = async (req, res) => {
       message: 'Google account linked successfully'
     });
   } catch (error) {
+    console.error('Link Google account error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to link Google account',

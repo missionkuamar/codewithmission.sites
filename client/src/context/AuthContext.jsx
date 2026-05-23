@@ -46,34 +46,32 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   };
 
+  // This function now properly handles 2FA response
   const loginWithGoogle = async (credentialResponse) => {
     try {
-      const { credential } = credentialResponse;
+      const response = await authService.googleAuth(credentialResponse);
       
-      // Send the Google credential to backend for verification
-      const response = await authService.googleAuth({ credential });
+      // If 2FA is required, return the temp data
+      if (response.requires2FA) {
+        return {
+          requires2FA: true,
+          userId: response.userId,
+          tempToken: response.tempToken
+        };
+      }
       
+      // Normal login
       if (response.success) {
         setUser(response.user);
         setIsAuthenticated(true);
-        
-        // Show different message for new vs existing user
-        if (response.message === 'Registration successful') {
-          toast.success(`Welcome ${response.user.name}! Account created successfully.`);
-        } else {
-          toast.success(`Welcome back ${response.user.name}!`);
-        }
-        
-        return true;
-      } else {
-        toast.error(response.message || 'Login failed');
-        return false;
+        toast.success(`Welcome ${response.user.name}!`);
+        return { success: true };
       }
+      
+      return { success: false };
     } catch (error) {
       console.error('Google login failed:', error);
-      const errorMsg = error.response?.data?.message || 'Login failed. Please try again.';
-      toast.error(errorMsg);
-      return false;
+      throw error;
     }
   };
 
@@ -87,6 +85,8 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      sessionStorage.removeItem('tempUserId');
+      sessionStorage.removeItem('tempToken');
       toast.success('Logged out successfully');
     }
   };

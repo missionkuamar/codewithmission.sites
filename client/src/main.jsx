@@ -8,7 +8,11 @@ const GOOGLE_CLIENT_ID = '15482745781-69nig67mgem2r2t3lnsf6d2jc2hh6oan.apps.goog
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider 
+      clientId={GOOGLE_CLIENT_ID}
+      onScriptLoadError={() => console.log('Google script failed to load')}
+      onScriptLoadSuccess={() => console.log('Google script loaded successfully')}
+    >
       <App />
     </GoogleOAuthProvider>
   </React.StrictMode>

@@ -3,9 +3,8 @@ import mongoose from 'mongoose';
 const userSchema = new mongoose.Schema({
   googleId: {
     type: String,
-    required: true,
-    unique: true,
-    sparse: true  // Allows null values but maintains uniqueness
+    sparse: true,
+    unique: true
   },
   email: {
     type: String,
@@ -22,44 +21,56 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  username: {
-    type: String,
-    unique: true,
-    sparse: true,  // Allows null/undefined values
-    default: null
-  },
   password: {
     type: String,
     default: null
   },
-  emailVerified: {
+  
+  // 2FA Fields
+  twoFactorEnabled: {
     type: Boolean,
     default: false
   },
-  role: {
+  twoFactorSecret: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user'
+    default: null
   },
+  backupCodes: [{
+    code: String,
+    used: {
+      type: Boolean,
+      default: false
+    }
+  }],
+  
+  // Security Fields
+  loginAttempts: {
+    type: Number,
+    default: 0
+  },
+  lockUntil: {
+    type: Date,
+    default: null
+  },
+  
   provider: {
     type: String,
     enum: ['google', 'local'],
     default: 'google'
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  lastLogin: {
-    type: Date,
-    default: Date.now
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   }
 }, {
   timestamps: true
 });
 
-// Create a compound index for better query performance
-userSchema.index({ email: 1, provider: 1 });
+// Method to check if account is locked
+userSchema.methods.isLocked = function() {
+  return this.lockUntil && this.lockUntil > Date.now();
+};
 
 const User = mongoose.model('User', userSchema);
 export default User;

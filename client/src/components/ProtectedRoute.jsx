@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
 
   if (loading) {
     return (
@@ -13,7 +15,9 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated) {
+  // Check both context and localStorage
+  if (!isAuthenticated && !token) {
+    console.log('Not authenticated, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 

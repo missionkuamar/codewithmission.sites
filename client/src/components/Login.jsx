@@ -1,43 +1,114 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import TwoFactorLogin from './TwoFactorLogin';
 import toast from 'react-hot-toast';
+import api from '../services/api';
 
 const Login = () => {
   const { loginWithGoogle, loading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [show2FA, setShow2FA] = useState(false);
+  const [tempData, setTempData] = useState(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  React.useEffect(() => {
-    if (isAuthenticated) {
+  useEffect(() => {
+    // Check if already authenticated
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user && !isAuthenticated) {
+      console.log('Already authenticated, redirecting...');
+      navigate('/dashboard');
+    } else if (isAuthenticated) {
+      console.log('Authenticated, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    console.log('Google login success:', credentialResponse);
+  // Handle Google Login
+ const handleGoogleSuccess = async (credentialResponse) => {
+  console.log('Google login success');
+
+  try {
     setIsLoggingIn(true);
-    
-    try {
-      const success = await loginWithGoogle(credentialResponse);
-      if (success) {
-        toast.success('Login successful! Redirecting...');
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('Login failed. Please try again.');
-    } finally {
+
+    const { data } = await api.post('/auth/google', credentialResponse);
+
+    console.log('Backend response:', data);
+
+    // =========================
+    // 2FA Required
+    // =========================
+    if (data.requires2FA) {
+
+      setTempData({
+        userId: data.userId,
+        tempToken: data.tempToken
+      });
+
+      setShow2FA(true);
+
+      toast.success('2FA verification required');
+
+      // IMPORTANT
       setIsLoggingIn(false);
+
+      return;
     }
-  };
 
-  const handleGoogleError = () => {
-    console.error('Google login failed');
+    // =========================
+    // Login Success
+    // =========================
+    if (data.success) {
+
+      localStorage.setItem('token', data.token);
+
+      localStorage.setItem(
+        'user',
+        JSON.stringify(data.user)
+      );
+
+      toast.success(`Welcome ${data.user.name}!`);
+
+      // Better navigation
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1000);
+
+      return;
+    }
+
+  } catch (error) {
+
+    console.error('Google login error:', error);
+
+    const errorMsg =
+      error.response?.data?.message ||
+      'Google login failed';
+
+    toast.error(errorMsg);
+
+  } finally {
+
+    // Always stop loading
+    setIsLoggingIn(false);
+  }
+};
+
+  const handleGoogleError = (error) => {
+    console.error('Google login failed:', error);
     toast.error('Google login failed. Please check your credentials and try again.');
+    setIsLoggingIn(false);
   };
 
+  const handle2FASuccess = () => {
+    console.log('2FA success, redirecting to dashboard');
+    window.location.href = '/dashboard';
+  };
+
+  // Show loading state
   if (loading || isLoggingIn) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -49,6 +120,18 @@ const Login = () => {
     );
   }
 
+  // Show 2FA component if needed
+  if (show2FA && tempData) {
+    return (
+      <TwoFactorLogin
+        userId={tempData.userId}
+        tempToken={tempData.tempToken}
+        onSuccess={handle2FASuccess}
+      />
+    );
+  }
+
+  // Main login form
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full mx-4 transform transition-all">
@@ -71,7 +154,7 @@ const Login = () => {
               size="large"
               text="continue_with"
               shape="rectangular"
-              width="100%"
+              width="250"
               useOneTap={false}
               auto_select={false}
             />
