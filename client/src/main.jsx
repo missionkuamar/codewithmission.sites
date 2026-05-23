@@ -1,14 +1,15 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { Provider } from 'react-redux'
-import { store } from './redux/store'
-import App from './App'
-import './index.css'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import App from './App.jsx';
+import './index.css';
+
+const GOOGLE_CLIENT_ID = '15482745781-69nig67mgem2r2t3lnsf6d2jc2hh6oan.apps.googleusercontent.com';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Provider store={store}>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <App />
-    </Provider>
-  </React.StrictMode>,
-)
+    </GoogleOAuthProvider>
+  </React.StrictMode>
+);

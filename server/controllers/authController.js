@@ -1,175 +1,225 @@
-import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.js';
-import RefreshToken from '../models/RefreshToken.js';
-import { validationResult } from 'express-validator';
-import { generateTokens, refreshAccessToken, revokeRefreshToken } from '../utils/generateToken.js';
+import generateToken from '../utils/generateToken.js';
 
-// @desc    Register user
-// @route   POST /api/auth/register
-export const registerUser = async (req, res) => {
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET
+);
+
+// Verify Google token and get user info
+const verifyGoogleToken = async (credential) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { name, email, password } = req.body;
-
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    const user = await User.create({
-      name,
-      email,
-      password,
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
-
-    // Get device info
-    const deviceInfo = {
-      userAgent: req.headers['user-agent'],
-      ipAddress: req.ip || req.connection.remoteAddress,
+    
+    const payload = ticket.getPayload();
+    return {
+      googleId: payload.sub,
+      email: payload.email,
+      name: payload.name,
+      picture: payload.picture,
+      emailVerified: payload.email_verified
     };
-
-    // Generate tokens
-    const { accessToken, refreshToken } = await generateTokens(user._id, deviceInfo);
-
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: accessToken,
-      refreshToken,
-    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Google token verification failed:', error);
+    throw new Error('Invalid Google token');
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-export const loginUser = async (req, res) => {
+// Generate a unique username from email
+const generateUsername = (email) => {
+  const baseUsername = email.split('@')[0];
+  // Remove special characters and spaces
+  const cleanUsername = baseUsername.replace(/[^a-zA-Z0-9]/g, '');
+  // Add random number to ensure uniqueness if needed
+  return `${cleanUsername}_${Math.floor(Math.random() * 10000)}`;
+};
+
+// Google OAuth - Handles both Login and Registration
+export const googleAuthCallback = async (req, res) => {
   try {
-    const { email, password } = req.body;
-console.log(email, password);
-    const user = await User.findOne({ email });
-    if (user && (await user.matchPassword(password))) {
-      // Get device info
-      const deviceInfo = {
-        userAgent: req.headers['user-agent'],
-        ipAddress: req.ip || req.connection.remoteAddress,
-      };
+    const { credential } = req.body;
+    
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google credential is required'
+      });
+    }
 
-      // Generate tokens
-      const { accessToken, refreshToken } = await generateTokens(user._id, deviceInfo);
+    // Verify the Google token
+    const googleUser = await verifyGoogleToken(credential);
+    
+    // Check if user exists by email
+    let user = await User.findOne({ email: googleUser.email });
 
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: accessToken,
-        refreshToken,
+    if (user) {
+      // LOGIN EXISTING USER
+      console.log(`Existing user logged in: ${user.email}`);
+      
+      // Update user info if needed
+      user.lastLogin = Date.now();
+      user.name = googleUser.name;
+      user.picture = googleUser.picture;
+      
+      // If user registered with email/password before, link Google account
+      if (!user.googleId) {
+        user.googleId = googleUser.googleId;
+        user.provider = 'google';
+      }
+      
+      await user.save();
+      
+      // Generate JWT token
+      const token = generateToken(user._id);
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Login successful',
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          picture: user.picture,
+          username: user.username,
+          role: user.role
+        }
       });
     } else {
-      res.status(401).json({ message: 'Invalid email or password' });
+      // REGISTER NEW USER WITH GOOGLE
+      console.log(`New user registering with Google: ${googleUser.email}`);
+      
+      // Generate a unique username
+      let username = generateUsername(googleUser.email);
+      let usernameExists = await User.findOne({ username });
+      
+      // Ensure username is unique
+      while (usernameExists) {
+        username = generateUsername(googleUser.email);
+        usernameExists = await User.findOne({ username });
+      }
+      
+      // Create new user
+      user = await User.create({
+        googleId: googleUser.googleId,
+        email: googleUser.email,
+        name: googleUser.name,
+        picture: googleUser.picture,
+        username: username,
+        emailVerified: googleUser.emailVerified,
+        provider: 'google',
+        lastLogin: Date.now()
+      });
+      
+      // Generate JWT token for new user
+      const token = generateToken(user._id);
+      
+      return res.status(201).json({
+        success: true,
+        message: 'Registration successful',
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          picture: user.picture,
+          username: user.username,
+          role: user.role
+        }
+      });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Google auth error:', error);
+    
+    // Handle duplicate key errors
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email',
+        error: 'Duplicate email'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Authentication failed',
+      error: error.message
+    });
   }
 };
 
-// @desc    Refresh token
-// @route   POST /api/auth/refresh
-export const refreshToken = async (req, res) => {
+// Get current user
+export const getCurrentUser = async (req, res) => {
   try {
-    const { refreshToken: refreshTokenString } = req.body;
-    
-    if (!refreshTokenString) {
-      return res.status(401).json({ message: 'Refresh token required' });
+    const user = await User.findById(req.user.userId).select('-__v -password');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+        username: user.username,
+        role: user.role,
+        provider: user.provider
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
 
-    const deviceInfo = {
-      userAgent: req.headers['user-agent'],
-      ipAddress: req.ip || req.connection.remoteAddress,
-    };
+// Logout
+export const logout = (req, res) => {
+  res.json({
+    success: true,
+    message: 'Logged out successfully'
+  });
+};
 
-    const { accessToken, user } = await refreshAccessToken(refreshTokenString, deviceInfo);
+// Optional: Link Google account to existing email/password user
+export const linkGoogleAccount = async (req, res) => {
+  try {
+    const { credential, email, password } = req.body;
+    const googleUser = await verifyGoogleToken(credential);
+    
+    // Find existing user by email and password
+    const user = await User.findOne({ email, password });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found with provided credentials'
+      });
+    }
+    
+    // Link Google account
+    user.googleId = googleUser.googleId;
+    user.provider = 'google';
+    await user.save();
     
     res.json({
-      token: accessToken,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      success: true,
+      message: 'Google account linked successfully'
     });
   } catch (error) {
-    res.status(401).json({ message: error.message });
-  }
-};
-
-// @desc    Logout user (revoke refresh token)
-// @route   POST /api/auth/logout
-export const logoutUser = async (req, res) => {
-  try {
-    const { refreshToken } = req.body;
-    
-    if (refreshToken) {
-      await revokeRefreshToken(refreshToken);
-    }
-    
-    res.json({ message: 'Logged out successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Get user profile
-// @route   GET /api/auth/profile
-export const getUserProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select('-password');
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Update user profile
-// @route   PUT /api/auth/profile
-export const updateUserProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
-      
-      if (req.body.password) {
-        user.password = req.body.password;
-      }
-      
-      if (req.body.avatar) {
-        user.avatar = req.body.avatar;
-      }
-      
-      const updatedUser = await user.save();
-      
-      res.json({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        role: updatedUser.role,
-        avatar: updatedUser.avatar,
-      });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Failed to link Google account',
+      error: error.message
+    });
   }
 };
