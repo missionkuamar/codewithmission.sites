@@ -1,76 +1,57 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
-  googleId: {
+  username: {
     type: String,
-    sparse: true,
-    unique: true
+    required: true,
+    unique: true,
+    trim: true
   },
   email: {
     type: String,
     required: true,
     unique: true,
-    lowercase: true,
-    trim: true
-  },
-  name: {
-    type: String,
-    required: true
-  },
-  picture: {
-    type: String,
-    default: ''
+    lowercase: true
   },
   password: {
     type: String,
-    default: null
+    required: true
   },
-  
-  // 2FA Fields
-  twoFactorEnabled: {
-    type: Boolean,
-    default: false
-  },
-  twoFactorSecret: {
+  profilePicture: {
     type: String,
-    default: null
+    default: ''
   },
-  backupCodes: [{
-    code: String,
-    used: {
-      type: Boolean,
-      default: false
-    }
+  bio: {
+    type: String,
+    maxLength: 500
+  },
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }],
-  
-  // Security Fields
-  loginAttempts: {
-    type: Number,
-    default: 0
-  },
-  lockUntil: {
+  following: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  savedPosts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post'
+  }],
+  createdAt: {
     type: Date,
-    default: null
-  },
-  
-  provider: {
-    type: String,
-    enum: ['google', 'local'],
-    default: 'google'
-  },
-  role: {
-    type: String,
-    enum: ['user', 'admin'],
-    default: 'user'
+    default: Date.now
   }
-}, {
-  timestamps: true
 });
 
-// Method to check if account is locked
-userSchema.methods.isLocked = function() {
-  return this.lockUntil && this.lockUntil > Date.now();
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+userSchema.methods.comparePassword = async function(password) {
+  return await bcrypt.compare(password, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
-export default User;
+export default mongoose.model('User', userSchema);

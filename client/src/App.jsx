@@ -1,57 +1,78 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import ProtectedRoute from './components/ProtectedRoute';
-import SecuritySettings from './components/SecuritySettings';
+import Home from './pages/Home';
+import CreatePost from './pages/CreatePost';
+import Profile from './pages/Profile';
+import PostDetail from './pages/PostDetail';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ErrorBoundary from './components/ErrorBoundary';
+import useAuthStore from './store/authStore';
 
-const GOOGLE_CLIENT_ID = '15482745781-69nig67mgem2r2t3lnsf6d2jc2hh6oan.apps.googleusercontent.com';
+const PrivateRoute = ({ children }) => {
+  const { user } = useAuthStore();
+  return user ? children : <Navigate to="/login" />;
+};
 
 function App() {
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50">
-            <Navbar />
-            <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/login" element={<Login />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/security"
-                element={
-                  <ProtectedRoute>
-                    <SecuritySettings />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-            <Toaster
-              position="top-right"
-              toastOptions={{
+    <ErrorBoundary>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <Navbar />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/" element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            } />
+            <Route path="/create" element={
+              <PrivateRoute>
+                <CreatePost />
+              </PrivateRoute>
+            } />
+            <Route path="/profile/:id" element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            } />
+            <Route path="/post/:id" element={
+              <PrivateRoute>
+                <PostDetail />
+              </PrivateRoute>
+            } />
+          </Routes>
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+              },
+              success: {
                 duration: 3000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
+                iconTheme: {
+                  primary: '#10B981',
+                  secondary: '#fff',
                 },
-              }}
-            />
-          </div>
-        </Router>
-      </AuthProvider>
-    </GoogleOAuthProvider>
+              },
+              error: {
+                duration: 4000,
+                iconTheme: {
+                  primary: '#EF4444',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
+        </div>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
