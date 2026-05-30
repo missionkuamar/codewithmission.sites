@@ -1,78 +1,76 @@
 import React, { useEffect, useState } from 'react';
-import { useInView } from 'react-intersection-observer';
-import PostCard from '../components/PostCard';
-import usePostStore from '../store/postStore';
-import { categories } from '../utils/constants';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProducts, clearError } from '../redux/slices/productSlice';
+import ProductList from '../components/ProductList';
+import ProductForm from '../components/ProductForm';
+import SearchBar from '../components/SearchBar';
+import AdvancedSearch from '../components/AdvancedSearch';
+import Pagination from '../components/Pagination';
 
 const Home = () => {
-  const { posts, fetchPosts, pagination, loading } = usePostStore();
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const dispatch = useDispatch();
+  const { products, loading, error, filters } = useSelector((state) => state.products);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
-    fetchPosts(currentPage, selectedCategory, searchQuery);
-  }, [currentPage, selectedCategory, searchQuery]);
+    dispatch(fetchProducts(filters));
+  }, [dispatch, filters]);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        dispatch(clearError());
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, dispatch]);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Search and Filter Section */}
-      <div className="mb-8">
-        <input
-          type="text"
-          placeholder="Search posts..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-      </div>
-
-      {/* Categories */}
-      <div className="mb-8 overflow-x-auto">
-        <div className="flex space-x-2">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap transition ${
-                selectedCategory === category
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {category}
-            </button>
-          ))}
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Product Management</h1>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="btn-primary flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Product
+          </button>
         </div>
-      </div>
 
-      {/* Posts */}
-      {loading ? (
-        <div className="text-center py-8">Loading...</div>
-      ) : (
-        <>
-          {posts.map((post) => (
-            <PostCard key={post._id} post={post} />
-          ))}
-          
-          {/* Pagination */}
-          <div className="flex justify-center space-x-2 mt-8">
-            {Array.from({ length: pagination.totalPages }, (_, i) => (
-              <button
-                key={i + 1}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 rounded ${
-                  currentPage === i + 1
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            {error}
           </div>
-        </>
-      )}
+        )}
+
+        {/* Search Section */}
+        <div className="mb-6 flex gap-4">
+          <div className="flex-1">
+            <SearchBar />
+          </div>
+          <AdvancedSearch />
+        </div>
+
+        {/* Product List */}
+        <ProductList products={products} loading={loading} />
+
+        {/* Pagination */}
+        <Pagination />
+
+        {/* Add Product Modal */}
+        {showAddModal && (
+          <ProductForm
+            onClose={() => setShowAddModal(false)}
+            isEditing={false}
+          />
+        )}
+      </div>
     </div>
   );
 };
