@@ -1,0 +1,123 @@
+// components/wishlist/WishlistPagination.jsx
+import React from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+const WishlistPagination = ({
+  currentPage,
+  totalPages,
+  itemsPerPage,
+  setItemsPerPage,
+  totalItems,
+  indexOfFirstItem,
+  indexOfLastItem,
+  paginate,
+  nextPage,
+  prevPage,
+  currentTheme
+}) => {
+  if (totalPages <= 1 && totalItems <= itemsPerPage) return null;
+
+  const pageNumbers = [];
+  const maxPageButtons = 5;
+  
+  let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+  let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+  
+  if (endPage - startPage + 1 < maxPageButtons) {
+    startPage = Math.max(1, endPage - maxPageButtons + 1);
+  }
+  
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers.push(i);
+  }
+
+  return (
+    <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-700 flex-wrap gap-4">
+      <div className="flex items-center gap-2">
+        <span className="text-sm opacity-75">Show:</span>
+        <select
+          value={itemsPerPage}
+          onChange={(e) => {
+            setItemsPerPage(Number(e.target.value));
+            paginate(1);
+          }}
+          className={`px-2 py-1 rounded-lg ${currentTheme.secondary} border ${currentTheme.border} text-sm focus:outline-none`}
+        >
+          <option value={6}>6</option>
+          <option value={12}>12</option>
+          <option value={24}>24</option>
+          <option value={48}>48</option>
+        </select>
+        <span className="text-sm opacity-75">
+          Showing {totalItems === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, totalItems)} of {totalItems} items
+        </span>
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <button
+          onClick={prevPage}
+          disabled={currentPage === 1 || totalPages === 0}
+          className={`p-2 rounded-lg transition-all ${
+            currentPage === 1 || totalPages === 0
+              ? 'opacity-50 cursor-not-allowed'
+              : `${currentTheme.card} hover:scale-105`
+          }`}
+        >
+          <ChevronLeft size={18} />
+        </button>
+        
+        {startPage > 1 && totalPages > 0 && (
+          <>
+            <button
+              onClick={() => paginate(1)}
+              className={`px-3 py-1 rounded-lg transition-all ${currentTheme.card} hover:scale-105`}
+            >
+              1
+            </button>
+            {startPage > 2 && <span className="px-1">...</span>}
+          </>
+        )}
+        
+        {pageNumbers.map(number => (
+          <button
+            key={number}
+            onClick={() => paginate(number)}
+            className={`px-3 py-1 rounded-lg transition-all ${
+              currentPage === number
+                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                : `${currentTheme.card} hover:scale-105`
+            }`}
+          >
+            {number}
+          </button>
+        ))}
+        
+        {endPage < totalPages && totalPages > 0 && (
+          <>
+            {endPage < totalPages - 1 && <span className="px-1">...</span>}
+            <button
+              onClick={() => paginate(totalPages)}
+              className={`px-3 py-1 rounded-lg transition-all ${currentTheme.card} hover:scale-105`}
+            >
+              {totalPages}
+            </button>
+          </>
+        )}
+        
+        <button
+          onClick={nextPage}
+          disabled={currentPage === totalPages || totalPages === 0}
+          className={`p-2 rounded-lg transition-all ${
+            currentPage === totalPages || totalPages === 0
+              ? 'opacity-50 cursor-not-allowed'
+              : `${currentTheme.card} hover:scale-105`
+          }`}
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default WishlistPagination;
