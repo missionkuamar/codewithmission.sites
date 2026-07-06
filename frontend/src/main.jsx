@@ -9,7 +9,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 
 
-const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const clientId = '15482745781-ue5gs6gsbpipt9i4sdhtvv4pqh8uj62d.apps.googleusercontent.com'; // Replace with your actual Google Client ID
 
 
 if (!clientId) {
