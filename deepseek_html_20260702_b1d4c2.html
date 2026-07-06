@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mission Kumar · MERN Stack Resume</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #e8edf3;
+            font-family: 'Inter', -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 2.5rem 1rem;
+            min-height: 100vh;
+        }
+
+        /* ── main resume card ── */
+        .resume {
+            max-width: 1000px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.10);
+            overflow: hidden;
+            transition: 0.2s;
+        }
+
+        /* ── header ── */
+        .header {
+            background: linear-gradient(135deg, #0b1f33 0%, #1a3a5a 100%);
+            color: white;
+            padding: 2.2rem 2.8rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-left .subhead {
+            font-size: 1rem;
+            font-weight: 400;
+            opacity: 0.85;
+            margin-top: 0.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
+        }
+
+        .header-left .subhead i {
+            margin-right: 5px;
+            opacity: 0.7;
+        }
+
+        .header-right {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem 1.8rem;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.6rem 1.2rem;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+        }
+
+        .header-right a {
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0.9;
+            transition: 0.15s;
+        }
+
+        .header-right a:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+        }
+
+        /* ── content grid ── */
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 2.2fr;
+            gap: 0;
+            background: #f9fbfd;
+        }
+
+        /* ── left sidebar ── */
+        .sidebar {
+            background: #f2f6fc;
+            padding: 1.8rem 1.8rem 2rem;
+            border-right: 1px solid #e4eaf2;
+        }
+
+        .sidebar-section {
+            margin-bottom: 1.8rem;
+        }
+
+        .sidebar-section h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #2d4b6a;
+            border-bottom: 2px solid #d0dce8;
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.8rem;
+            font-weight: 700;
+        }
+
+        .sidebar-section h3 i {
+            margin-right: 6px;
+            color: #1f6390;
+            width: 18px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: #1d3347;
+            padding: 0.25rem 0;
+        }
+
+        .info-item i {
+            width: 18px;
+            color: #1f6390;
+            font-size: 0.85rem;
+        }
+
+        .skill-tag {
+            display: inline-block;
+            background: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1b3855;
+            border: 1px solid #d4dfe9;
+            margin: 0.15rem 0.1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .skill-tag i {
+            margin-right: 4px;
+            color: #2a6f9c;
+            font-size: 0.6rem;
+        }
+
+        .skill-tag.highlight {
+            background: #1b3855;
+            color: white;
+            border-color: #1b3855;
+        }
+        .skill-tag.highlight i {
+            color: white;
+        }
+
+        .skill-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem 0.2rem;
+            margin-top: 0.2rem;
+        }
+
+        .cert-badge {
+            background: white;
+            border-radius: 40px;
+            padding: 0.3rem 1rem;
+            border: 1px solid #cbd8e6;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: #0d2a44;
+            margin: 0.15rem 0;
+        }
+
+        .cert-badge i {
+            color: #f5b342;
+        }
+
+        /* ── main content ── */
+        .main {
+            padding: 1.8rem 2.2rem 2rem;
+            background: white;
+        }
+
+        .main-section {
+            margin-bottom: 1.8rem;
+        }
+
+        .main-section h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #2d4b6a;
+            border-bottom: 2px solid #e4eaf2;
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.9rem;
+            font-weight: 700;
+        }
+
+        .main-section h3 i {
+            margin-right: 8px;
+            color: #1f6390;
+            width: 22px;
+        }
+
+        .exp-item {
+            margin-bottom: 1rem;
+        }
+
+        .exp-item .title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #0d263d;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .exp-item .title .date {
+            font-weight: 400;
+            font-size: 0.7rem;
+            color: #4f6b84;
+            background: #eef3f9;
+            padding: 0.1rem 0.7rem;
+            border-radius: 30px;
+        }
+
+        .exp-item .desc {
+            font-size: 0.8rem;
+            color: #24415b;
+            line-height: 1.5;
+            margin-top: 0.2rem;
+            padding-left: 0.2rem;
+        }
+
+        .exp-item .desc ul {
+            list-style: none;
+            margin-top: 0.2rem;
+        }
+
+        .exp-item .desc ul li {
+            padding: 0.1rem 0 0.1rem 1.2rem;
+            position: relative;
+            font-size: 0.78rem;
+        }
+
+        .exp-item .desc ul li::before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: #1f6390;
+            font-weight: 700;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin-top: 0.2rem;
+        }
+
+        .project-card {
+            background: #f5f9ff;
+            border-radius: 14px;
+            padding: 0.8rem 1rem;
+            border-left: 3px solid #1f6390;
+        }
+
+        .project-card strong {
+            font-size: 0.85rem;
+            color: #0d263d;
+            display: block;
+        }
+
+        .project-card .tech {
+            font-size: 0.65rem;
+            color: #2b5b80;
+            margin-top: 0.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.2rem;
+        }
+
+        .project-card .tech span {
+            background: #e4edf8;
+            padding: 0.05rem 0.6rem;
+            border-radius: 30px;
+        }
+
+        .project-card .desc-sm {
+            font-size: 0.72rem;
+            color: #1d3b57;
+            margin-top: 0.15rem;
+            line-height: 1.4;
+        }
+
+        .edu-item {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #edf2f8;
+        }
+
+        .edu-item .college {
+            font-weight: 600;
+            color: #0d263d;
+        }
+
+        .edu-item .detail {
+            color: #3f5e7a;
+            font-size: 0.75rem;
+        }
+
+        /* ── responsive ── */
+        @media (max-width: 750px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1.8rem;
+            }
+            .header-right {
+                background: rgba(255,255,255,0.06);
+                padding: 0.4rem 1rem;
+                border-radius: 40px;
+                width: 100%;
+                justify-content: center;
+            }
+            .content {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid #e4eaf2;
+            }
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-left h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media print {
+            body { background: white; padding: 0.2in; }
+            .resume { box-shadow: none; border-radius: 0; }
+            .header { background: #0b1f33 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .sidebar { background: #f2f6fc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="resume">
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-left">
+            <h1>Mission Kumar</h1>
+            <div class="subhead">
+                <span><i class="fas fa-graduation-cap"></i> BCA · 5<sup>th</sup> Semester</span>
+                <span><i class="fas fa-certificate"></i> MERN Stack Certified</span>
+                <span><i class="fas fa-map-pin"></i> India</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <a href="#"><i class="fas fa-envelope"></i> mission@dev.in</a>
+            <a href="#"><i class="fab fa-github"></i> github/mission</a>
+            <a href="#"><i class="fab fa-linkedin"></i> linkedin</a>
+        </div>
+    </header>
+
+    <!-- ===== CONTENT ===== -->
+    <div class="content">
+
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar">
+
+            <!-- Contact -->
+            <div class="sidebar-section">
+                <h3><i class="fas fa-address-card"></i> Contact</h3>
+                <div class="info-item"><i class="fas fa-phone-alt"></i> +91 98765 43210</div>
+                <div class="info-item"><i class="fas fa-envelope"></i> mission.k@outlook.com</div>
+                <div class="info-item"><i class="fas fa-globe"></i> codewithmission.site</div>
+                <div class="info-item"><i class="fab fa-github"></i> github.com/missiondev</div>
+            </div>
+
+            <!-- Skills (Core) -->
+            <div class="sidebar-section">
+                <h3><i class="fas fa-code"></i> Core Stack</h3>
+                <div class="skill-group">
+                    <span class="skill-tag highlight"><i class="fab fa-react"></i> React</span>
+                    <span class="skill-tag highlight"><i class="fab fa-node-js"></i> Node.js</span>
+                    <span class="skill-tag highlight"><i class="fas fa-database"></i> MongoDB</span>
+                    <span class="skill-tag highlight"><i class="fas fa-server"></i> Express</span>
+                    <span class="skill-tag"><i class="fab fa-nextjs"></i> Next.js</span>
+                    <span class="skill-tag"><i class="fas fa-bolt"></i> Redis (Upstash)</span>
+                    <span class="skill-tag"><i class="fab fa-aws"></i> AWS</span>
+                </div>
+            </div>
+
+            <!-- AWS & Services -->
+            <div class="sidebar-section">
+                <h3><i class="fab fa-aws"></i> AWS & Cloud</h3>
+                <div class="skill-group">
+                    <span class="skill-tag"><i class="fas fa-server"></i> EC2</span>
+                    <span class="skill-tag"><i class="fas fa-box"></i> S3</span>
+                    <span class="skill-tag"><i class="fas fa-route"></i> Route 53</span>
+                    <span class="skill-tag"><i class="fas fa-cloud"></i> CDN</span>
+                    <span class="skill-tag"><i class="fas fa-rocket"></i> Vercel</span>
+                    <span class="skill-tag"><i class="fas fa-cloud-upload-alt"></i> Render</span>
+                </div>
+            </div>
+
+            <!-- Tools & Integrations -->
+            <div class="sidebar-section">
+                <h3><i class="fas fa-tools"></i> Tools & Integrations</h3>
+                <div class="skill-group">
+                    <span class="skill-tag"><i class="fab fa-github"></i> GitHub</span>
+                    <span class="skill-tag"><i class="fas fa-credit-card"></i> Razorpay</span>
+                    <span class="skill-tag"><i class="fas fa-plug"></i> WebSocket</span>
+                    <span class="skill-tag"><i class="fab fa-google"></i> Google Auth</span>
+                    <span class="skill-tag"><i class="fas fa-robot"></i> AI Coding</span>
+                    <span class="skill-tag"><i class="fab fa-tailwind"></i> Tailwind</span>
+                    <span class="skill-tag"><i class="fas fa-sitemap"></i> Context API</span>
+                    <span class="skill-tag"><i class="fas fa-box"></i> Redux</span>
+                </div>
+            </div>
+
+            <!-- Certification -->
+            <div class="sidebar-section">
+                <h3><i class="fas fa-certificate"></i> Certification</h3>
+                <div class="cert-badge"><i class="fas fa-check-circle"></i> MERN Stack Developer</div>
+                <div class="cert-badge" style="margin-top:4px;"><i class="fas fa-check-circle"></i> Full Stack Web Dev</div>
+                <div style="font-size:0.7rem; color:#2b5b80; margin-top:4px;">
+                    <i class="fas fa-calendar-alt"></i> 2025 · Certified
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main">
+
+            <!-- Profile -->
+            <div class="main-section">
+                <h3><i class="fas fa-user-circle"></i> Professional Profile</h3>
+                <p style="font-size:0.85rem; color:#1a334b; line-height:1.6;">
+                    MERN Stack developer with a strong foundation in full‑stack web development. 
+                    Passionate about building scalable, real‑world applications using <strong>React, Node.js, 
+                    MongoDB, Next.js, and AWS</strong>. Currently pursuing BCA (5<sup>th</sup> semester) and 
+                    holding a <strong>MERN Stack Certification</strong>. Experienced in deploying 
+                    production‑grade apps with EC2, S3, Route 53, and CDN.
+                </p>
+            </div>
+
+            <!-- Projects (main) -->
+            <div class="main-section">
+                <h3><i class="fas fa-project-diagram"></i> Key Projects</h3>
+                <div class="project-grid">
+
+                    <div class="project-card">
+                        <strong>codewithmission.site</strong>
+                        <div class="tech"><span>Next.js</span><span>AWS</span><span>Redis</span></div>
+                        <div class="desc-sm">
+                            Full‑stack platform with MERN + Next.js, deployed on AWS EC2, S3, Route 53 &amp; CDN.
+                            Features WebSocket, Razorpay, and Google Auth.
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <strong>Real‑time Chat App</strong>
+                        <div class="tech"><span>WebSocket</span><span>React</span><span>Node</span></div>
+                        <div class="desc-sm">
+                            Real‑time messaging with Socket.io, Redis (Upstash) for session management, 
+                            and JWT authentication. Deployed on Vercel.
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <strong>E‑commerce (MERN)</strong>
+                        <div class="tech"><span>Redux</span><span>Razorpay</span><span>Tailwind</span></div>
+                        <div class="desc-sm">
+                            Full‑featured e‑commerce with cart, order management, Razorpay payment 
+                            integration, and admin dashboard.
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <strong>AI‑Powered Blog</strong>
+                        <div class="tech"><span>AI</span><span>Next.js</span><span>Context API</span></div>
+                        <div class="desc-sm">
+                            Blog platform with AI‑assisted content generation, using Next.js, Context API 
+                            for state, and deployed on Render with S3 for images.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Education & Experience -->
+            <div class="main-section">
+                <h3><i class="fas fa-graduation-cap"></i> Education & Experience</h3>
+
+                <div class="exp-item">
+                    <div class="title">
+                        <span>BCA · 5<sup>th</sup> Semester</span>
+                        <span class="date">2023 – 2026</span>
+                    </div>
+                    <div class="desc">
+                        <ul>
+                            <li>Focus on full‑stack development, data structures, and cloud computing.</li>
+                            <li>Built multiple MERN projects as part of curriculum and personal portfolio.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="exp-item">
+                    <div class="title">
+                        <span>MERN Stack Certification</span>
+                        <span class="date">2025</span>
+                    </div>
+                    <div class="desc">
+                        <ul>
+                            <li>Certified MERN Stack Developer — comprehensive training in React, Node, Express, MongoDB.</li>
+                            <li>Covered deployment, authentication, WebSocket, and real‑time integrations.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="exp-item" style="margin-bottom:0;">
+                    <div class="title">
+                        <span>Freelance / Personal Projects</span>
+                        <span class="date">2024 – present</span>
+                    </div>
+                    <div class="desc">
+                        <ul>
+                            <li>Developed and deployed <strong>codewithmission.site</strong> with full AWS stack.</li>
+                            <li>Integrated Razorpay, Google Auth, WebSocket, and Upstash Redis.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- footer note -->
+            <div style="border-top:1px solid #e4eaf2; padding-top:0.6rem; margin-top:0.2rem; font-size:0.65rem; color:#5a7a98; display:flex; gap:1.2rem; flex-wrap:wrap;">
+                <span><i class="fas fa-check-circle" style="color:#1f8b4c;"></i> MERN · Next.js · AWS · WebSocket</span>
+                <span><i class="fas fa-rocket"></i> codewithmission.site</span>
+                <span><i class="fas fa-code"></i> AI‑assisted development</span>
+            </div>
+
+        </main>
+
+    </div> <!-- /content -->
+</div> <!-- /resume -->
+
+</body>
+</html>

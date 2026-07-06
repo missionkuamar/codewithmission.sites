@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MERN Stack · 4‑Page Resume</title>
+  <!-- Font Awesome (icons) & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #eef2f5;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    /* ── resume wrapper (simulates 4 sheets) ── */
+    .resume-sheets {
+      max-width: 1100px;
+      width: 100%;
+      background: white;
+      border-radius: 2rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;   /* 2 columns · 2 rows = 4 sheets */
+      gap: 2px;
+      background: #d0d7de;              /* subtle gap color */
+    }
+
+    /* each "sheet" = card */
+    .sheet {
+      background: #ffffff;
+      padding: 1.8rem 1.8rem 2rem;
+      transition: 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sheet:hover {
+      background: #fafcff;
+    }
+
+    /* headers / titles */
+    .sheet-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6c7a8a;
+      margin-bottom: 0.75rem;
+      border-bottom: 2px solid #e9edf2;
+      padding-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sheet-title span {
+      background: #eef2f6;
+      padding: 0.15rem 0.7rem;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      color: #2c3e4f;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #0b1a2b;
+      letter-spacing: -0.3px;
+      margin-bottom: 0.75rem;
+    }
+
+    h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1f2a3a;
+      margin: 0.8rem 0 0.4rem;
+    }
+
+    .skill-tag {
+      display: inline-block;
+      background: #eef3f9;
+      padding: 0.25rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #1f3a57;
+      margin: 0.2rem 0.2rem;
+      border: 1px solid #dce3ec;
+    }
+
+    .skill-tag i {
+      margin-right: 4px;
+      color: #2a5c8a;
+      font-size: 0.65rem;
+    }
+
+    .skill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem 0.2rem;
+      margin-top: 0.2rem;
+    }
+
+    .badge-icon {
+      background: #1f2a3a;
+      color: white;
+      border-radius: 40px;
+      padding: 0.2rem 0.8rem;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-icon i {
+      font-size: 0.6rem;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: #1e2b3c;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #f0f4f9;
+    }
+
+    .list-item i {
+      width: 18px;
+      color: #2a6f9c;
+      font-size: 0.8rem;
+    }
+
+    .project-highlight {
+      background: #f5f9ff;
+      padding: 0.8rem 1rem;
+      border-radius: 16px;
+      margin: 0.6rem 0;
+      border-left: 3px solid #1f6390;
+    }
+
+    .project-highlight strong {
+      color: #0b2b44;
+    }
+
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mt-1 { margin-top: 0.5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mb-1 { margin-bottom: 0.3rem; }
+    .text-sm { font-size: 0.7rem; color: #4d6077; }
+
+    .aws-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem 0.8rem;
+      font-size: 0.75rem;
+      background: #f8fafc;
+      padding: 0.6rem 0.8rem;
+      border-radius: 14px;
+      margin-top: 0.3rem;
+    }
+
+    .aws-grid i {
+      color: #f08c2e;
+      width: 18px;
+    }
+
+    .footer-note {
+      margin-top: auto;
+      border-top: 1px dashed #dce3ec;
+      padding-top: 0.8rem;
+      font-size: 0.7rem;
+      color: #3f5569;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-note i {
+      color: #1f6390;
+      margin-right: 4px;
+    }
+
+    /* responsive: 2x2 → 1 column on small screens */
+    @media (max-width: 700px) {
+      .resume-sheets {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .sheet {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="resume-sheets">
+
+    <!-- ========== SHEET 1 : PROFILE + MERN / NEXT ========= -->
+    <div class="sheet">
+      <div class="sheet-title">
+        <span><i class="fas fa-user-circle"></i> profile</span>
+        <span>#1</span>
+      </div>
+      <h2>MERN · Next.js</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-bottom: 0.5rem;">
+        <span class="badge-icon"><i class="fab fa-react"></i> React 18</span>
+        <span class="badge-icon"><i class="fab fa-node-js"></i> Node.js</span>
+        <span class="badge-icon"><i class="fas fa-database"></i> MongoDB</span>
+        <span class="badge-icon"><i class="fab fa-aws"></i> AWS</span>
+      </div>
+      <p style="font-size:0.8rem; color: #1f3347; line-height: 1.4; margin: 0.2rem 0 0.6rem;">
+        <i class="fas fa-code" style="color:#1f6390; margin-right:6px;"></i>
+        Full‑stack developer · 4+ years · MERN, Next.js, Redis, AWS, WebSocket.
+      </p>
+
+      <h3><i class="fas fa-cube" style="margin-right:6px; color:#2a6f9c;"></i> MERN stack</h3>
+      <div class="skill-group">
+        <span class="skill-tag"><i class="fab fa-react"></i> React</span>
+        <span class="skill-tag"><i class="fab fa-node"></i> Node</span>
+        <span class="skill-tag"><i class="fas fa-database"></i> Mongo</span>
+        <span class="skill-tag"><i class="fas fa-server"></i> Express</span>
+        <span class="skill-tag"><i class="fab fa-js"></i> JavaScript</span>
+        <span class="skill-tag"><i class="fab fa-js-square"></i> TypeScript</span>
+      </div>
+
+      <h3 style="margin-top:0.9rem;"><i class="fab fa-nextjs" style="margin-right:6px;"></i> Next.js · Redis</h3>
+      <div class="skill-group">
+        <span class="skill-tag"><i class="fas fa-code-branch"></i> Next.js 14</span>
+        <span class="skill-tag"><i class="fas fa-bolt"></i> Redis (Upstash)</span>
+        <span class="skill-tag"><i class="fas fa-globe"></i> Server Actions</span>
+        <span class="skill-tag"><i class="fas fa-lock"></i> Auth.js</span>
+        <span class="skill-tag"><i class="fas fa-cloud"></i> Vercel / Render</span>
+      </div>
+
+      <!-- WebSocket + Razorpay -->
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+        <span class="skill-tag"><i class="fas fa-plug"></i> WebSocket</span>
+        <span class="skill-tag"><i class="fas fa-credit-card"></i> Razorpay</span>
+        <span class="skill-tag"><i class="fab fa-google"></i> Google Auth</span>
+        <span class="skill-tag"><i class="fab fa-github"></i> GitHub</span>
+      </div>
+
+      <div class="footer-note">
+        <span><i class="fas fa-calendar-alt"></i> 2026</span>
+        <span><i class="fas fa-map-pin"></i> codewithmission.site</span>
+      </div>
+    </div>
+
+    <!-- ========== SHEET 2 : AWS · SERVICES · DEPLOY ========= -->
+    <div class="sheet">
+      <div class="sheet-title">
+        <span><i class="fab fa-aws"></i> AWS & cloud</span>
+        <span>#2</span>
+      </div>
+      <h2>Amazon Web Services</h2>
+      <div class="aws-grid">
+        <span><i class="fas fa-server"></i> EC2</span>
+        <span><i class="fas fa-box"></i> S3</span>
+        <span><i class="fas fa-route"></i> Route 53</span>
+        <span><i class="fas fa-globe"></i> CloudFront (CDN)</span>
+        <span><i class="fas fa-lock"></i> IAM · VPC</span>
+        <span><i class="fas fa-database"></i> RDS (optional)</span>
+      </div>
+      <div style="margin: 0.4rem 0 0.2rem;">
+        <span class="skill-tag"><i class="fas fa-cloud-upload-alt"></i> S3 static hosting</span>
+        <span class="skill-tag"><i class="fas fa-network-wired"></i> Route 53 DNS</span>
+        <span class="skill-tag"><i class="fas fa-tachometer-alt"></i> CloudFront CDN</span>
+      </div>
+      <p style="font-size:0.75rem; color:#2f4763; background:#eef5fc; padding:0.5rem 0.8rem; border-radius:14px; margin:0.4rem 0;">
+        <i class="fas fa-check-circle" style="color:#1f8b4c;"></i> EC2 + S3 + Route53 + CDN — production ready
+      </p>
+
+      <h3 style="margin-top:0.4rem;"><i class="fas fa-rocket"></i> Deploy & hosting</h3>
+      <div class="skill-group">
+        <span class="skill-tag"><i class="fas fa-cloud"></i> Vercel</span>
+        <span class="skill-tag"><i class="fas fa-server"></i> Render</span>
+        <span class="skill-tag"><i class="fab fa-aws"></i> AWS amplify</span>
+        <span class="skill-tag"><i class="fas fa-code"></i> CI/CD (GitHub)</span>
+      </div>
+
+      <div class="project-highlight">
+        <strong><i class="fas fa-globe"></i> codewithmission.site</strong>
+        <div style="display:flex; flex-wrap:wrap; gap:0.3rem; margin-top:5px;">
+          <span class="skill-tag" style="background:#d9e6f2;">Next.js</span>
+          <span class="skill-tag" style="background:#d9e6f2;">AWS S3</span>
+          <span class="skill-tag" style="background:#d9e6f2;">Route 53</span>
+          <span class="skill-tag" style="background:#d9e6f2;">CDN</span>
+        </div>
+        <div style="font-size:0.75rem; margin-top:4px; color:#1b3f5c;">
+          <i class="fas fa-check"></i> live project · all AWS services integrated
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <span><i class="fas fa-certificate"></i> Upstash Redis · AWS EC2</span>
+        <span><i class="fas fa-cogs"></i> infra as code</span>
+      </div>
+    </div>
+
+    <!-- ========== SHEET 3 : AI · REDUX · TAILWIND · CONTEXT ========= -->
+    <div class="sheet">
+      <div class="sheet-title">
+        <span><i class="fas fa-brain"></i> AI & frontend</span>
+        <span>#3</span>
+      </div>
+      <h2>AI · State · Styling</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+        <span class="skill-tag"><i class="fas fa-robot"></i> AI‑assisted coding</span>
+        <span class="skill-tag"><i class="fab fa-github"></i> Copilot · ChatGPT</span>
+        <span class="skill-tag"><i class="fas fa-code"></i> prompt engineering</span>
+      </div>
+      <p style="font-size:0.75rem; color:#1e3b57; margin:0.3rem 0 0.2rem;">
+        <i class="fas fa-microchip"></i> Using AI to accelerate development, debugging & refactoring
+      </p>
+
+      <h3><i class="fas fa-layer-group"></i> State management</h3>
+      <div class="skill-group">
+        <span class="skill-tag"><i class="fas fa-box"></i> Redux Toolkit</span>
+        <span class="skill-tag"><i class="fas fa-sitemap"></i> Context API</span>
+        <span class="skill-tag"><i class="fas fa-database"></i> Zustand (optional)</span>
+        <span class="skill-tag"><i class="fas fa-hook"></i> React Query</span>
+      </div>
+
+      <h3><i class="fab fa-css3-alt"></i> UI · Tailwind · CSS</h3>
+      <div class="skill-group">
+        <span class="skill-tag"><i class="fab fa-tailwind"></i> Tailwind CSS</span>
+        <span class="skill-tag"><i class="fas fa-palette"></i> CSS modules</span>
+        <span class="skill-tag"><i class="fas fa-mobile-alt"></i> responsive</span>
+        <span class="skill-tag"><i class="fas fa-draw-polygon"></i> Framer Motion</span>
+        <span class="skill-tag"><i class="fas fa-file-alt"></i> shadcn/ui</span>
+      </div>
+
+      <div style="background: #f3f7fd; border-radius: 14px; padding: 0.6rem 0.9rem; margin: 0.6rem 0;">
+        <div class="flex-between">
+          <span><i class="fas fa-check-circle" style="color:#1f8b4c;"></i> Context API + Redux</span>
+          <span class="badge-icon" style="background:#1f3a57;">production</span>
+        </div>
+        <div style="font-size:0.75rem; color: #1c3c58;">
+          <i class="fas fa-link"></i> global state · auth · theme · cart
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <span><i class="fas fa-code"></i> AI‑pair programming</span>
+        <span><i class="fas fa-paint-brush"></i> Tailwind + Context</span>
+      </div>
+    </div>
+
+    <!-- ========== SHEET 4 : PROJECTS · AUTH · WEBSOCKET ========= -->
+    <div class="sheet">
+      <div class="sheet-title">
+        <span><i class="fas fa-project-diagram"></i> projects & live</span>
+        <span>#4</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; background:#e8f0fa; padding:0.3rem 0.8rem; border-radius:40px; width:fit-content;">
+        <i class="fas fa-globe" style="color:#0f4b7a;"></i>
+        <span style="font-weight:600; font-size:0.85rem;">codewithmission.site</span>
+        <span class="badge-icon" style="background:#0f4b7a;"><i class="fas fa-rocket"></i> live</span>
+      </div>
+
+      <div style="margin:0.5rem 0;">
+        <div class="list-item"><i class="fas fa-check-circle" style="color:#1f8b4c;"></i> MERN + Next.js full‑stack</div>
+        <div class="list-item"><i class="fas fa-check-circle" style="color:#1f8b4c;"></i> Redis (Upstash) caching · sessions</div>
+        <div class="list-item"><i class="fas fa-check-circle" style="color:#1f8b4c;"></i> AWS EC2 · S3 · Route 53 · CDN</div>
+        <div class="list-item"><i class="fas fa-check-circle" style="color:#1f8b4c;"></i> WebSocket real‑time features</div>
+        <div class="list-item"><i class="fas fa-check-circle" style="color:#1f8b4c;"></i> Razorpay payment integration</div>
+        <div class="list-item"><i class="fas fa-check-circle" style="color:#1f8b4c;"></i> Google OAuth · JWT</div>
+      </div>
+
+      <h3><i class="fas fa-key"></i> Auth · security</h3>
+      <div class="skill-group">
+        <span class="skill-tag"><i class="fab fa-google"></i> Google Auth</span>
+        <span class="skill-tag"><i class="fas fa-lock"></i> JWT</span>
+        <span class="skill-tag"><i class="fas fa-cookie"></i> session (Upstash)</span>
+        <span class="skill-tag"><i class="fab fa-github"></i> GitHub OAuth</span>
+      </div>
+
+      <h3><i class="fas fa-plug"></i> WebSocket & real‑time</h3>
+      <div class="skill-group">
+        <span class="skill-tag"><i class="fas fa-exchange-alt"></i> Socket.io</span>
+        <span class="skill-tag"><i class="fas fa-bolt"></i> live notifications</span>
+        <span class="skill-tag"><i class="fas fa-comment-dots"></i> chat</span>
+        <span class="skill-tag"><i class="fas fa-chart-line"></i> live updates</span>
+      </div>
+
+      <div class="project-highlight" style="border-left-color: #d97706;">
+        <strong><i class="fas fa-credit-card"></i> Razorpay integration</strong>
+        <div style="font-size:0.75rem;">payment gateway · webhooks · subscription</div>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:3px;">
+          <span class="skill-tag">test mode</span>
+          <span class="skill-tag">live keys</span>
+          <span class="skill-tag">React</span>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <span><i class="fas fa-code-branch"></i> GitHub · Vercel · Render</span>
+        <span><i class="fas fa-check-circle" style="color:#0f7b3a;"></i> all projects live</span>
+      </div>
+    </div>
+
+  </div> <!-- /resume-sheets -->
+</body>
+</html>
